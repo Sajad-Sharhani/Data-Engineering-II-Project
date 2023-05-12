@@ -1,4 +1,5 @@
 import requests
+import time
 
 # Your PAT goes here
 token = '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'
@@ -37,5 +38,16 @@ if 'items' in data:
 
             num_commits += len(commits_data)
             page += 1
+
+            # Check the rate limit remaining
+            rate_limit_remaining = int(commits_response.headers['X-RateLimit-Remaining'])
+            rate_limit_reset = int(commits_response.headers['X-RateLimit-Reset'])
+
+            # If we're close to the rate limit, sleep until the rate limit reset time
+            if rate_limit_remaining < 10:
+                reset_time = rate_limit_reset - time.time()
+                if reset_time > 0:
+                    print(f"Sleeping for {reset_time} seconds to avoid rate limit")
+                    time.sleep(reset_time)
 
         print(f'Repository: {repo_name}, Number of Commits: {num_commits}')
