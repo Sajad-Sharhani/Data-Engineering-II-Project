@@ -1,6 +1,7 @@
 import requests
 from datetime import datetime, timedelta
 import time
+import urllib
 
 # Your PAT goes here
 token = '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'
@@ -28,33 +29,48 @@ for day in range(1):  # We're now only looping over one day to reduce the number
     # The GitHub API url for searching repositories
     url = f'https://api.github.com/search/repositories?q=created:{start_date_str}..{end_date_str}&per_page=100'
 
-    response = requests.get(url, headers=headers)
+    while url:
+        response = requests.get(url, headers=headers)
 
-    # Check the status code of the response
-    if response.status_code != 200:
-        print(f"Request failed with status code {response.status_code}")
-    else:
-        # The response will be a JSON object containing the search results
-        data = response.json()
-
-        # Check if 'items' key exists in the response data
-        if 'items' in data:
-            # Loop over each repository in the results
-            for item in data['items']:
-                # Get the repository's primary language
-                language = item['language']
-                
-                # If the language is not None, increment its count in the dictionary
-                if language is not None:
-                    if language in language_counts:
-                        language_counts[language] += 1
-                    else:
-                        language_counts[language] = 1
+        # Check the status code of the response
+        if response.status_code != 200:
+            print(f"Request failed with status code {response.status_code}")
+            break
         else:
-            print("No 'items' key in the response. Response data: ", data)
+            # The response will be a JSON object containing the search results
+            data = response.json()
 
-    # Sleep for a short time to avoid hitting the rate limit
-    time.sleep(2)
+            # Check if 'items' key exists in the response data
+            if 'items' in data:
+                # Loop over each repository in the results
+                for item in data['items']:
+                    # Get the repository's primary language
+                    language = item['language']
+
+                    # If the language is not None, increment its count in the dictionary
+                    if language is not None:
+                        if language in language_counts:
+                            language_counts[language] += 1
+                        else:
+                            language_counts[language] = 1
+            else:
+                print("No 'items' key in the response. Response data: ", data)
+
+        if 'Link' in response.headers:
+            links = response.headers['Link'].split(', ')
+            url = None
+            for link in links:
+                if 'rel="next"' in link:
+                    url = link[link.index('<') + 1:link.index('>')]
+        else:
+            url = None
+
+        # Check rate limit headers and sleep if necessary
+        if 'X-RateLimit-Remaining' in response.headers and int(response.headers['X-RateLimit-Remaining']) == 0:
+            reset_time = datetime.fromtimestamp(int(response.headers['X-RateLimit-Reset']))
+            sleep_time = (reset_time - datetime.now()).total_seconds() + 1  # Add a 1 second buffer
+            print(f'Rate limit exceeded. Sleeping for {sleep_time} seconds.')
+            time.sleep(sleep_time)
 
 # After all requests are done, print the top 10 languages
 top_languages = sorted(language_counts.items(), key=lambda x: x[1], reverse=True)[:10]
