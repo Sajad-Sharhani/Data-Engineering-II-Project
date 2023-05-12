@@ -68,7 +68,7 @@ while url:
                     else:
                         language_counts[language] = 1
 
-                # If we have found 100 repositories with a 'tests' or 'test' directory, exit the loop
+                # If we have found 10 repositories with a 'tests' or 'test' directory, exit the loop
                 if sum(language_counts.values()) >= 10:
                     url = None
                     break
