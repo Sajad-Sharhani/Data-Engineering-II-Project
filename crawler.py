@@ -7,7 +7,7 @@ import os
 
 # Access the token from the environment variable
 token = os.environ.get('GITHUB_TOKEN')
-#token = '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'
+#token = ''
 print(token)
 headers = {
     'Authorization': f'token {token}',
