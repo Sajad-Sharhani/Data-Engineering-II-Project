@@ -14,7 +14,6 @@ db = client.github
 # Access the token from the environment variable
 # token = os.environ.get('GITHUB_TOKEN')
 token = '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'
-print(token)
 headers = {
     'Authorization': f'token {token}',
 }
@@ -96,6 +95,9 @@ for day in range(365):
 
                     # insert the data into the repository collection
                     db.repository.insert_many(repository_data)
+
+                    # clear the repository_data list
+                    repository_data.clear()
 
         if 'Link' in response.headers:
             links = response.headers['Link'].split(', ')
