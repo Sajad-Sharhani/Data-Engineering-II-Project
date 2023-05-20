@@ -4,10 +4,16 @@ import time
 import urllib
 import json
 import os
+from pymongo import MongoClient
+
+# Connect to the MongoDB, change the connection string per your MongoDB environment
+client = MongoClient(port=27017)
+# Set the db object to point to the business database
+db = client.github
 
 # Access the token from the environment variable
-token = os.environ.get('GITHUB_TOKEN')
-#token = ''
+# token = os.environ.get('GITHUB_TOKEN')
+token = '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'
 print(token)
 headers = {
     'Authorization': f'token {token}',
@@ -21,7 +27,7 @@ repository_data = []
 file_counter = 1
 
 # Loop over each day in the last year
-for day in range(365):  
+for day in range(365):
     start_date = one_year_ago + timedelta(days=day)
     end_date = start_date + timedelta(days=1)
     start_date_str = start_date.isoformat()
@@ -46,7 +52,8 @@ for day in range(365):
                 num_commits = 0
                 while True:
                     commits_url = f'https://api.github.com/repos/{repo_name}/commits?sha={default_branch}&page={page}&per_page=100'
-                    commits_response = requests.get(commits_url, headers=headers)
+                    commits_response = requests.get(
+                        commits_url, headers=headers)
                     commits_data = commits_response.json()
 
                     if not commits_data:
@@ -65,7 +72,8 @@ for day in range(365):
 
                 # Check if the repository has a CI/CD workflow
                 workflows_url = f'https://api.github.com/repos/{repo_name}/actions/workflows'
-                workflows_response = requests.get(workflows_url, headers=headers)
+                workflows_response = requests.get(
+                    workflows_url, headers=headers)
                 workflows_data = workflows_response.json()
                 has_ci_cd = 0
                 if any('ci' in workflow['name'].lower() or 'cd' in workflow['name'].lower() for workflow in workflows_data.get('workflows', [])):
@@ -81,10 +89,13 @@ for day in range(365):
                 })
 
                 if len(repository_data) == 30:
-                    with open(f'repository_data_{file_counter}.json', 'w') as f:
-                        json.dump(repository_data, f)
-                        repository_data.clear()  # clear the list for the next set of repositories
-                        file_counter += 1
+                    for i in range(len(repository_data)):
+                        for key in repository_data[i]:
+                            if repository_data[i][key] == 'null':
+                                repository_data[i][key] = None
+
+                    # insert the data into the repository collection
+                    db.repository.insert_many(repository_data)
 
         if 'Link' in response.headers:
             links = response.headers['Link'].split(', ')
@@ -96,8 +107,10 @@ for day in range(365):
             url = None
 
         if 'X-RateLimit-Remaining' in response.headers and int(response.headers['X-RateLimit-Remaining']) == 0:
-            reset_time = datetime.fromtimestamp(int(response.headers['X-RateLimit-Reset']))
-            sleep_time = (reset_time - datetime.now()).total_seconds() + 1  # Add a 1 second buffer
+            reset_time = datetime.fromtimestamp(
+                int(response.headers['X-RateLimit-Reset']))
+            # Add a 1 second buffer
+            sleep_time = (reset_time - datetime.now()).total_seconds() + 1
             print(f'Rate limit exceeded. Sleeping for {sleep_time} seconds.')
             time.sleep(sleep_time)
 
@@ -105,4 +118,3 @@ for day in range(365):
 if repository_data:
     with open(f'repository_data_{file_counter}.json', 'w') as f:
         json.dump(repository_data, f)
-
