@@ -13,7 +13,7 @@ headers = {
 one_year_ago = datetime.now() - timedelta(days=365)
 
 # Loop over each day in the last year
-for day in range(365):
+for day in range(1):
     # Calculate the start and end dates for this day
     start_date = one_year_ago + timedelta(days=day)
     end_date = start_date + timedelta(days=1)
