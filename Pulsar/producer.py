@@ -1,15 +1,15 @@
 import requests
 from datetime import datetime, timedelta
 import pulsar
-from pulsar.schema import AvroSchema
+from pulsar.schema import *
 
 # Define the schema for the repository data
 
 
-class RepoData(AvroSchema):
-    name: str
-    language: str
-    default_branch: str
+class RepoData(Record):
+    name= String()
+    language= String()
+    default_branch= String()
 
 
 def producer():
@@ -17,7 +17,7 @@ def producer():
     client = pulsar.Client('pulsar://localhost:6650')
     producer = client.create_producer(
         topic='persistent://sample/standalone/github_repositories',
-        schema=RepoData)
+        schema=JsonSchema(RepoData))
 
     headers = {
         'Authorization': f'token {token}',

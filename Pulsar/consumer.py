@@ -1,24 +1,25 @@
 import requests
 from pymongo import MongoClient
 import pulsar
-from pulsar.schema import AvroSchema
+from pulsar.schema import *
 
 # Define the schema for the repository data
 
 
-class RepoData(AvroSchema):
-    name: str
-    language: str
-    default_branch: str
+class RepoData(Record):
+    name = String()
+    language = String()
+    default_branch = String()
 
 
 def consumer():
     # Connect to the Pulsar server
+    print('consumer')
     client = pulsar.Client('pulsar://localhost:6650')
     consumer = client.subscribe(
         topic='persistent://sample/standalone/github_repositories',
         subscription_name='repo_analyzer',
-        schema=RepoData)
+        schema=JsonSchema(RepoData))
 
     # Connect to MongoDB
     mongo_client = MongoClient(port=27017)
@@ -31,10 +32,11 @@ def consumer():
     repository_data = []
 
     while True:
+        print('while')
         msg = consumer.receive()
         repo_data = msg.value()
         consumer.acknowledge(msg)
-
+        print('repo_data', repo_data)
         # Count the commits for the repo
         page = 1
         num_commits = 0
@@ -74,6 +76,8 @@ def consumer():
             'has_ci_cd': has_ci_cd
         })
 
+        print('repository_data', repository_data)
+
         # If repository_data has 30 items, insert them into MongoDB and clear the list
         if len(repository_data) == 30:
             db.repository.insert_many(repository_data)
@@ -82,7 +86,7 @@ def consumer():
     client.close()
 
 
-if __name__ == "main":
+if __name__ == '__main__':
     # Access the token from the environment variable
     token = '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'
     consumer()
