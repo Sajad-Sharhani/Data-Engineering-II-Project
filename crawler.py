@@ -41,6 +41,7 @@ for day in range(365):
             break
 
         data = response.json()
+        print('data', data)
 
         if 'items' in data:
             for item in data['items']:
