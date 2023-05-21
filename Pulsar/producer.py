@@ -7,16 +7,16 @@ from pulsar.schema import *
 
 
 class RepoData(Record):
-    name= String()
-    language= String()
-    default_branch= String()
+    name = String()
+    language = String()
+    default_branch = String()
 
 
 def producer():
     # Connect to the Pulsar server
     client = pulsar.Client('pulsar://localhost:6650')
     producer = client.create_producer(
-        topic='persistent://sample/standalone/github_repositories',
+        topic='github_repositories',
         schema=JsonSchema(RepoData))
 
     headers = {
@@ -47,6 +47,7 @@ def producer():
                 for item in data['items']:
                     repo_data = RepoData(
                         name=item['full_name'], language=item['language'], default_branch=item['default_branch'])
+                    print('repo_data', repo_data)
                     producer.send(repo_data)
 
             if 'Link' in response.headers:
