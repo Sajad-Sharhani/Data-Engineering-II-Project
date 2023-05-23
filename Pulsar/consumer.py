@@ -4,8 +4,6 @@ import pulsar
 from pulsar.schema import *
 
 # Define the schema for the repository data
-
-
 class RepoData(Record):
     name = String()
     language = String()
@@ -14,16 +12,18 @@ class RepoData(Record):
 
 def consumer():
     # Connect to the Pulsar server
-    print('consumer')
-    client = pulsar.Client('pulsar://localhost:6650')
+    print('Starting consumer')
+    client = pulsar.Client('pulsar://192.168.2.91:6650')
     consumer = client.subscribe(
         topic='github_repositories',
-        subscription_name='repo_analyzer',
+        subscription_name='repo_2',
         schema=JsonSchema(RepoData))
 
     # Connect to MongoDB
-    mongo_client = MongoClient(port=27017)
+    mongo_client = MongoClient('192.168.2.91',27017)
     db = mongo_client.github
+
+    print('Connected to MongoDB')
 
     headers = {
         'Authorization': f'token {token}',
@@ -32,11 +32,11 @@ def consumer():
     repository_data = []
 
     while True:
-        print('while')
         msg = consumer.receive()
         repo_data = msg.value()
         consumer.acknowledge(msg)
-        print('repo_data', repo_data.name)
+        print(f'Received message: {repo_data.name}')
+
         # Count the commits for the repo
         page = 1
         num_commits = 0
@@ -52,7 +52,7 @@ def consumer():
             print('num_commits', num_commits)
             page += 1
 
-            # Check if the repository has a 'tests' or 'test' directory
+        # Check if the repository has a 'tests' or 'test' directory
         contents_url = f'https://api.github.com/repos/{repo_data.name}/contents'
         contents_response = requests.get(contents_url, headers=headers)
         contents_data = contents_response.json()
@@ -83,11 +83,11 @@ def consumer():
             'has_ci_cd': has_ci_cd
         })
 
-        print('repository_data before mongo')
+        #print('Appended data to list')
+
         # If repository_data has 30 items, insert them into MongoDB and clear the list
         if len(repository_data) == 30:
-            print('mongo')
-            print('repository_data', repository_data)
+            #print('Inserting into MongoDB')
             db.repository.insert_many(repository_data)
             repository_data.clear()
 
@@ -96,5 +96,5 @@ def consumer():
 
 if __name__ == '__main__':
     # Access the token from the environment variable
-    token = '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'
+    token = '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'
     consumer()
