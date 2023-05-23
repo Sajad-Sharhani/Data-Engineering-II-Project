@@ -88,7 +88,7 @@ def consumer():
             repository_data.clear()
 
 
-    client.close()
+        client.close()
 
 if __name__ == "__main__":
     # Access the token from the environment variable.ludvig
