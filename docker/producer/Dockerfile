@@ -1,5 +1,5 @@
 # Use an official Python runtime as the base image
-FROM python:3.10-slim-buster
+FROM python:3.10-buster
 
 # Set the working directory in the container
 WORKDIR /app
@@ -17,4 +17,4 @@ COPY producer.py .
 EXPOSE 6650
 
 # Set the command to run your Python script
-CMD ["python", "producer.py"]
+CMD ["python", "-u", "producer.py"]
