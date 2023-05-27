@@ -12,14 +12,15 @@ class RepoData(Record):
 
 def consumer():
     # Connect to the Pulsar server
-    client = pulsar.Client('pulsar://pulsar:6650')
+    client = pulsar.Client('pulsar://10.43.0.12:6650')
     consumer = client.subscribe(
         topic='github_repositories',
         subscription_name='repo_2',
+        consumer_type=pulsar.ConsumerType.Shared,
         schema=JsonSchema(RepoData))
 
     # Connect to MongoDB
-    mongo_client = MongoClient('mongodb',27017)
+    mongo_client = MongoClient('10.43.0.11',27017)
     db = mongo_client.github
     db.repository.create_index('name', unique=True)
 

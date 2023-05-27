@@ -20,7 +20,7 @@ services:
       - "27017:27017"
 
   producer:
-    image: 127.0.0.1:5000/producer
+    image: 192.168.2.93:5000/producer
     build:
       context: ./producer
       network: host
@@ -30,7 +30,7 @@ services:
     restart: unless-stopped
 
   consumer:
-    image: 127.0.0.1:5000/consumer
+    image: 192.168.2.93:5000/consumer
     build:
       context: ./consumer
       network: host

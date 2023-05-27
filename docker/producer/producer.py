@@ -14,7 +14,7 @@ class RepoData(Record):
 
 def producer():
     # Connect to the Pulsar server
-    client = pulsar.Client('pulsar://pulsar:6650')
+    client = pulsar.Client('pulsar://10.43.0.12:6650')
     producer = client.create_producer(
         topic='github_repositories',
         schema=JsonSchema(RepoData))
