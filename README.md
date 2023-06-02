@@ -2,7 +2,7 @@
 
 ## Project Description
 
-is an exciting endeavor undertaken as part of the Data Engineering II course at Uppsala University. The objective is to develop an efficient analytic system for GitHub, leveraging the capabilities of Apache Pulsar, a streaming framework, and Kubernetes, a container orchestration platform.
+This project is an exciting endeavor undertaken as part of the Data Engineering II course at Uppsala University. The objective is to develop an efficient analytic system for GitHub, leveraging the capabilities of Apache Pulsar, a streaming framework, and Kubernetes, a container orchestration platform.
 
 The system aims to address the limitations of GitHub's existing search capabilities by streaming data from GitHub's API and employing Apache Pulsar for real-time analysis. By utilizing these cutting-edge technologies, developers will gain access to invaluable insights that were previously unavailable.
 
