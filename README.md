@@ -1,4 +1,4 @@
-# Data-Engineering-II-Project
+# Github analytic system using a streaming framework
 
 ## Project Description
 
